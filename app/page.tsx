@@ -1,95 +1,105 @@
-import Image from "next/image";
-import styles from "./page.module.css";
+"use client";
+
+import { useState, useRef, useEffect, CSSProperties } from "react";
+import { Button } from "@mui/material";
+
+const styles: { [key: string]: CSSProperties } = {
+  page: {
+    color: "steelblue",
+    display: "flex",
+    alignItems: "center",
+    flexDirection: "column",
+    padding: "40px",
+    justifyContent: "center",
+    gap: "20px",
+  },
+  box: {
+    borderRadius: "12px",
+    width: "60%",
+    height: "450px",
+    objectFit: "cover",
+    border: "1px solid steelblue",
+    alignItems: "center",
+    display: "flex",
+    justifyContent: "center",
+  },
+  button: {
+    backgroundColor: "steelblue",
+    color: "aliceblue",
+    border: "1px solid steelblue",
+    borderRadius: "8px",
+  },
+  buttonContainer: {
+    display: "flex",
+    gap: "10px",
+  },
+  link: {
+    textDecoration: "underline",
+  },
+};
 
 export default function Home() {
-  return (
-    <div className={styles.page}>
-      <main className={styles.main}>
-        <Image
-          className={styles.logo}
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol>
-          <li>
-            Get started by editing <code>app/page.tsx</code>.
-          </li>
-          <li>Save and see your changes instantly.</li>
-        </ol>
+  const Webcam = () => {
+    const videoRef = useRef<HTMLVideoElement | null>(null);
+    const [hasError, setHasError] = useState(false);
 
-        <div className={styles.ctas}>
-          <a
-            className={styles.primary}
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className={styles.logo}
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-            className={styles.secondary}
-          >
-            Read our docs
-          </a>
+    useEffect(() => {
+      const startCamera = async () => {
+        try {
+          const stream = await navigator.mediaDevices.getUserMedia({
+            video: true,
+          });
+          if (videoRef.current) {
+            videoRef.current.srcObject = stream;
+          }
+        } catch (error) {
+          console.error("Error accessing webcam:", error);
+          setHasError(true);
+        }
+      };
+      startCamera();
+
+      // Cleanup function to stop the media stream when the component unmounts
+      return () => {
+        if (videoRef.current && videoRef.current.srcObject) {
+          const stream = videoRef.current.srcObject as MediaStream;
+          stream.getTracks().forEach((track) => track.stop());
+        }
+      };
+    }, []);
+    if (hasError) {
+      return (
+        <div style={styles.box}>
+          <p>Error accessing webcam</p>
         </div>
-      </main>
-      <footer className={styles.footer}>
+      );
+    }
+
+    return <video ref={videoRef} autoPlay style={styles.box} />;
+  };
+
+  return (
+    <div style={styles.page}>
+      <h1>Face Recognition app.</h1>
+
+      <Webcam />
+
+      <div style={styles.buttonContainer}>
+        <Button style={styles.button}>Upload Image</Button>
+        <Button style={styles.button}>Detect emotion</Button>
+      </div>
+
+      <p>
+        This app uses{" "}
         <a
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
+          href="https://github.com/serengil/deepface"
           target="_blank"
-          rel="noopener noreferrer"
+          style={styles.link}
         >
-          <Image
-            aria-hidden
-            src="/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
+          Deepface
+        </a>{" "}
+        to recognize user faces.
+      </p>
     </div>
   );
 }
