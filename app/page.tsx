@@ -34,7 +34,7 @@ const styles: { [key: string]: CSSProperties } = {
 export default function Home() {
   return (
     <div style={styles.page}>
-      <h1>Face Recognition app.</h1>
+      <h1>Facial Recognition</h1>
 
       <FaceDetector />
 
@@ -46,11 +46,11 @@ export default function Home() {
       <p>
         This app uses{" "}
         <a
-          href="https://github.com/serengil/deepface"
+          href="https://github.com/vladmandic/face-api"
           target="_blank"
           style={styles.link}
         >
-          Deepface
+          FaceAPI
         </a>{" "}
         to recognize user faces.
       </p>
