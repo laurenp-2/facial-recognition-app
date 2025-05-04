@@ -1,9 +1,9 @@
 "use client";
 
 import { CSSProperties } from "react";
-import { Button } from "@mui/material";
-// import Webcam from "@/components/Webcam";
+import { Button, Divider } from "@mui/material";
 import FaceDetector from "@/components/FaceDetection";
+import ImageInputButton from "@/components/UploadFile";
 
 const styles: { [key: string]: CSSProperties } = {
   page: {
@@ -38,10 +38,10 @@ export default function Home() {
 
       <FaceDetector />
 
-      <div style={styles.buttonContainer}>
-        <Button style={styles.button}>Upload Image</Button>
+      <Divider style={styles.buttonContainer}>
+        <ImageInputButton></ImageInputButton>
         <Button style={styles.button}>Detect emotion</Button>
-      </div>
+      </Divider>
 
       <p>
         This app uses{" "}
@@ -52,7 +52,7 @@ export default function Home() {
         >
           FaceAPI
         </a>{" "}
-        to recognize user faces.
+        to recognize and analyze user faces.
       </p>
     </div>
   );
