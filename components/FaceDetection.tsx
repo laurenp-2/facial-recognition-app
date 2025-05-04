@@ -1,3 +1,4 @@
+/* eslint-disable react-hooks/exhaustive-deps */
 import React, { useEffect, useRef, CSSProperties, useState } from "react";
 import { Button } from "@mui/material";
 import * as faceapi from "@vladmandic/face-api";
@@ -232,9 +233,9 @@ const FaceDetector: React.FC = () => {
       )}
 
       {isStreaming ? (
-        <Button onClick={handlePause}>Pause Video</Button>
+        <Button onClick={handlePause} style={styles.button}>Pause Video</Button>
       ) : (
-        <Button onClick={handleStart}>Start Video</Button>
+        <Button onClick={handleStart} style={styles.button}>Start Video</Button>
       )}
       
       {!modelsLoaded && <p>Loading face detection models...</p>}
