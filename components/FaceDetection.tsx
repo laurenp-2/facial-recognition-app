@@ -2,6 +2,7 @@
 import React, { useEffect, useRef, CSSProperties, useState } from "react";
 import { Button } from "@mui/material";
 import * as faceapi from "@vladmandic/face-api";
+import ImageInputButton from "./ImageInputButton";
 
 const styles: { [key: string]: CSSProperties } = {
   container: {
@@ -11,10 +12,11 @@ const styles: { [key: string]: CSSProperties } = {
     gap: "10px",
     alignItems: "center",
   },
+  buttonsBox: { display: "flex", flexDirection: "row", gap: "10px" },
   videoBox: {
     borderRadius: "12px",
-    width: "700px",
-    height: "450px",
+    width: "800px",
+    height: "550px",
     objectFit: "cover",
     border: "1px solid steelblue",
     alignItems: "center",
@@ -26,10 +28,16 @@ const styles: { [key: string]: CSSProperties } = {
     top: 0,
     left: 0,
   },
-  button: {
-    width: "fit-content",
+  buttonPrimary: {
+    backgroundColor: "steelblue",
+    color: "aliceblue",
+    border: "1px solid steelblue",
+    borderRadius: "8px",
+  },
+  buttonSecondary: {
+    backgroundColor: "aliceblue",
     color: "steelblue",
-    border: "1px solid aliceblue",
+    border: "1px solid steelblue",
     borderRadius: "8px",
   },
 };
@@ -42,6 +50,10 @@ const FaceDetector: React.FC = () => {
   const [hasError, setHasError] = useState(false);
   const [modelsLoaded, setModelsLoaded] = useState(false);
   const detectionIntervalRef = useRef<number | null>(null);
+  const [showEmotions, setShowEmotions] = useState(false);
+  const [showLandmarks, setShowLandmarks] = useState(false);
+  const showEmotionsRef = useRef(showEmotions);
+  const showLandmarksRef = useRef(showLandmarks);
 
   const stopCamera = () => {
     if (streamRef.current) {
@@ -51,7 +63,7 @@ const FaceDetector: React.FC = () => {
         videoRef.current.srcObject = null;
       }
     }
-    
+
     // Clear detection interval
     if (detectionIntervalRef.current) {
       clearInterval(detectionIntervalRef.current);
@@ -87,7 +99,7 @@ const FaceDetector: React.FC = () => {
         faceapi.nets.ageGenderNet.loadFromUri(MODEL_URL),
         // Not loading faceRecognitionNet since the model file is missing
       ]);
-      
+
       setModelsLoaded(true);
       console.log("Face detection models loaded successfully");
       return true;
@@ -99,56 +111,68 @@ const FaceDetector: React.FC = () => {
 
   const setupFaceDetection = React.useCallback(() => {
     if (!videoRef.current || !canvasRef.current || !modelsLoaded) return;
-    
+
     console.log("Setting up face detection");
-    
+
     const video = videoRef.current;
     const canvas = canvasRef.current;
-    
+
     // Wait for video metadata to load to get correct dimensions
-    video.addEventListener('loadedmetadata', () => {
+    video.addEventListener("loadedmetadata", () => {
       // Set canvas dimensions to match video
-      const displaySize = { width: video.clientWidth, height: video.clientHeight };
+      const displaySize = {
+        width: video.clientWidth,
+        height: video.clientHeight,
+      };
       canvas.width = displaySize.width;
       canvas.height = displaySize.height;
       faceapi.matchDimensions(canvas, displaySize);
-      
+
       // Start detection loop
       if (detectionIntervalRef.current) {
         clearInterval(detectionIntervalRef.current);
       }
-      
+
       detectionIntervalRef.current = window.setInterval(async () => {
         if (!videoRef.current || video.paused || video.ended) return;
-        
+
         try {
           const detections = await faceapi
             .detectAllFaces(video, new faceapi.TinyFaceDetectorOptions())
             .withFaceLandmarks()
             .withFaceExpressions()
             .withAgeAndGender(); // Using the age and gender model instead
-            
-          const resizedDetections = faceapi.resizeResults(detections, displaySize);
-          
+
+          const resizedDetections = faceapi.resizeResults(
+            detections,
+            displaySize
+          );
+
           const ctx = canvas.getContext("2d");
           if (ctx) {
             ctx.clearRect(0, 0, canvas.width, canvas.height);
             faceapi.draw.drawDetections(canvas, resizedDetections);
-            faceapi.draw.drawFaceLandmarks(canvas, resizedDetections);
-            faceapi.draw.drawFaceExpressions(canvas, resizedDetections);
-            
+            if (showLandmarksRef.current) {
+              faceapi.draw.drawFaceLandmarks(canvas, resizedDetections);
+            }
+            if (showEmotionsRef.current) {
+              faceapi.draw.drawFaceExpressions(canvas, resizedDetections);
+            }
+
             // Draw age and gender
-            resizedDetections.forEach(detection => {
+            resizedDetections.forEach((detection) => {
               const { age, gender, genderProbability } = detection;
               if (age && gender) {
-                const text = `${Math.round(age)} years, ${gender} (${Math.round(genderProbability * 100)}%)`;
+                const text = `${Math.round(age)} years, ${gender} (${Math.round(
+                  genderProbability * 100
+                )}%)`;
                 const { x, y } = detection.detection.box;
                 ctx.fillStyle = "white";
                 ctx.font = "16px Arial";
                 ctx.fillText(text, x, y - 10);
               }
             });
-            
+
             // Debug output
             if (detections.length > 0) {
               console.log(`Detected ${detections.length} faces`);
@@ -162,6 +186,14 @@ const FaceDetector: React.FC = () => {
   }, [modelsLoaded]);
 
   useEffect(() => {
+    showEmotionsRef.current = showEmotions;
+  }, [showEmotions]);
+
+  useEffect(() => {
+    showLandmarksRef.current = showLandmarks;
+  }, [showLandmarks]);
+
+  useEffect(() => {
     // Load models first
     loadModels().then((success) => {
       if (success) {
@@ -173,13 +205,13 @@ const FaceDetector: React.FC = () => {
         });
       }
     });
-    
+
     // Cleanup function
     return () => {
       stopCamera();
     };
   }, []);
-  
+
   // Setup detection when models are loaded and video is streaming
   useEffect(() => {
     if (modelsLoaded && isStreaming) {
@@ -191,7 +223,7 @@ const FaceDetector: React.FC = () => {
     stopCamera();
     setIsStreaming(false);
   };
-  
+
   const handleStart = async () => {
     const success = await startCamera();
     if (success && modelsLoaded) {
@@ -217,12 +249,12 @@ const FaceDetector: React.FC = () => {
               display: isStreaming ? "block" : "none",
             }}
           />
-          <canvas 
-            ref={canvasRef} 
+          <canvas
+            ref={canvasRef}
             style={{
               ...styles.canvas,
               display: isStreaming ? "block" : "none",
-            }} 
+            }}
           />
           {!isStreaming && (
             <div style={styles.videoBox}>
@@ -231,13 +263,66 @@ const FaceDetector: React.FC = () => {
           )}
         </div>
       )}
+      <div style={styles.buttonsBox}>
+        {" "}
+        {isStreaming ? (
+          <Button
+            onClick={handlePause}
+            sx={{ fontFamily: "var(--inter)", textTransform: "none" }}
+            style={styles.buttonSecondary}
+          >
+            Pause Video
+          </Button>
+        ) : (
+          <Button
+            onClick={handleStart}
+            sx={{ fontFamily: "var(--inter)", textTransform: "none" }}
+            style={styles.buttonPrimary}
+          >
+            Start Video
+          </Button>
+        )}
+        {showEmotions ? (
+          <Button
+            style={styles.buttonSecondary}
+            sx={{ fontFamily: "var(--inter)", textTransform: "none" }}
+            onClick={() => setShowEmotions(false)}
+            disabled={!isStreaming}
+          >
+            Hide emotions
+          </Button>
+        ) : (
+          <Button
+            style={styles.buttonPrimary}
+            sx={{ fontFamily: "var(--inter)", textTransform: "none" }}
+            onClick={() => setShowEmotions(true)}
+            disabled={!isStreaming}
+          >
+            Show Emotions
+          </Button>
+        )}
+        {showLandmarks ? (
+          <Button
+            style={styles.buttonSecondary}
+            sx={{ fontFamily: "var(--inter)", textTransform: "none" }}
+            onClick={() => setShowLandmarks(false)}
+            disabled={!isStreaming}
+          >
+            Hide Landmarks
+          </Button>
+        ) : (
+          <Button
+            style={styles.buttonPrimary}
+            sx={{ fontFamily: "var(--inter)", textTransform: "none" }}
+            onClick={() => setShowLandmarks(true)}
+            disabled={!isStreaming}
+          >
+            Show Landmarks
+          </Button>
+        )}
+        <ImageInputButton></ImageInputButton>
+      </div>
 
-      {isStreaming ? (
-        <Button onClick={handlePause} style={styles.button}>Pause Video</Button>
-      ) : (
-        <Button onClick={handleStart} style={styles.button}>Start Video</Button>
-      )}
-      
       {!modelsLoaded && <p>Loading face detection models...</p>}
     </div>
   );

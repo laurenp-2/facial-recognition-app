@@ -29,7 +29,7 @@ const ImageInputButton: React.FC = () => {
           color: "aliceblue",
           border: "1px solid steelblue",
           borderRadius: "8px",
-        }}
+        }}  sx={{ fontFamily: "var(--inter)", textTransform: 'none' }}
       >
         Upload Image
       </Button>
