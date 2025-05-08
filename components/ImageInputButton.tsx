@@ -1,11 +1,15 @@
 import React, { useRef } from "react";
 import { Button } from "@mui/material";
 
+interface ImageInputButtonProps {
+  onImageSelected: (image: HTMLImageElement) => void;
+}
+
 /**
  * ImageInputButton — a button that prompts users to select an image file
  * @return {React.FC} – The rendered button component.
  */
-const ImageInputButton: React.FC = () => {
+const ImageInputButton: React.FC<ImageInputButtonProps> = () => {
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const handleButtonClick = () => {
@@ -25,11 +29,14 @@ const ImageInputButton: React.FC = () => {
       <Button
         onClick={handleButtonClick}
         style={{
-          backgroundColor: "steelblue",
-          color: "aliceblue",
-          border: "1px solid steelblue",
+          backgroundImage:
+            "url(https://media.istockphoto.com/id/1370962549/vector/violet-purple-pink-and-navy-blue-defocused-blurred-motion-gradient-abstract-background-vector.jpg?s=612x612&w=0&k=20&c=A6ArKVzCqEArn9ORyAYm78kbKyI47t2U2QWuHnwUkVg=)",
+          backgroundPosition: "left",
+          color: "#ffe8fe",
+          border: "1px solid #a82c72",
           borderRadius: "8px",
-        }}  sx={{ fontFamily: "var(--inter)", textTransform: 'none' }}
+        }}
+        sx={{ fontFamily: "var(--inter)", textTransform: "none" }}
       >
         Upload Image
       </Button>

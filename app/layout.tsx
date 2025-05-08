@@ -1,11 +1,12 @@
 import type { Metadata } from "next";
-import { Space_Mono, Inter } from "next/font/google";
+import { Inter, Archivo_Black } from "next/font/google";
 import "./globals.css";
 
-const spaceMono = Space_Mono({
+const archivoBlack = Archivo_Black({
   subsets: ["latin"],
-  weight: "700",
+  weight: "400",
   variable: "--font-space-mono",
+  
 });
 
 const inter = Inter({
@@ -25,7 +26,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body className={`${inter.variable} ${spaceMono.variable}`}>
+      <body className={`${inter.variable} ${archivoBlack.variable}`}>
         {children}
       </body>
     </html>

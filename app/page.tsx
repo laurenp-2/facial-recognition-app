@@ -4,7 +4,26 @@ import { CSSProperties } from "react";
 import FaceDetector from "@/components/FaceDetection";
 
 const styles: { [key: string]: CSSProperties } = {
+  background: { position: "relative", zIndex: "-1" },
   page: {
+    justifyContent: "center",
+    width: "100vw",
+    height: "100vh",
+    alignItems: "center",
+    textAlign: "center",
+    padding: "2% 10%",
+    display: "flex",
+    backgroundImage: "url(/393009763_34ba5513-fd0d-4432-851e-0486ed8af440.jpg)",
+    backgroundRepeat: "no-repeat",
+    backgroundSize: "cover",
+    backgroundPosition: "center",
+  },
+  pageContent: {
+    width: "70%",
+    minWidth: "500px",
+    backgroundColor: "black",
+    boxShadow: "0 0 40px 30px rgba(0, 0, 0, 0.7)",
+
     color: "steelblue",
     display: "flex",
     alignItems: "center",
@@ -12,6 +31,7 @@ const styles: { [key: string]: CSSProperties } = {
     padding: "40px",
     justifyContent: "center",
     gap: "20px",
+    borderRadius: "10px",
   },
   link: {
     textDecoration: "underline",
@@ -21,21 +41,38 @@ const styles: { [key: string]: CSSProperties } = {
 export default function Home() {
   return (
     <div style={styles.page}>
-      <h1>Facial Recognition</h1>
+      <div style={styles.pageContent}>
+        <div style={{ textAlign: "left", display: "flex", width: "50vw" }}>
+          <h1
+            style={{
+              fontStyle: "italic",
+              backgroundImage:
+                "url(https://media.istockphoto.com/id/1370962549/vector/violet-purple-pink-and-navy-blue-defocused-blurred-motion-gradient-abstract-background-vector.jpg?s=612x612&w=0&k=20&c=A6ArKVzCqEArn9ORyAYm78kbKyI47t2U2QWuHnwUkVg=)",
+              color: "transparent",
+              backgroundClip: "text",
+              fontSize: "50px",
+              backgroundPosition: "center",
+             
+            }}
+          >
+            FACE ANALYZER
+          </h1>
+        </div>
 
-      <FaceDetector />
+        <FaceDetector />
 
-      <p>
-        This app uses{" "}
-        <a
-          href="https://github.com/vladmandic/face-api"
-          target="_blank"
-          style={styles.link}
-        >
-          FaceAPI
-        </a>{" "}
-        to recognize and analyze user faces.
-      </p>
+        <p>
+          This app uses{" "}
+          <a
+            href="https://github.com/vladmandic/face-api"
+            target="_blank"
+            style={styles.link}
+          >
+            FaceAPI
+          </a>{" "}
+          to recognize and analyze user faces.
+        </p>
+      </div>
     </div>
   );
 }
