@@ -14,9 +14,16 @@ const styles: { [key: string]: CSSProperties } = {
     gap: "10px",
     alignItems: "center",
   },
-  buttonsBox: { display: "flex", flexDirection: "row", gap: "10px" },
+  buttonsBox: {
+    display: "flex",
+    flexWrap: "wrap",
+    gap: "10px",
+    width: "90%", 
+    maxWidth: "800px", 
+    justifyContent: "center",
+  },
   videoBox: {
-    width: "50vw",
+    width: "90%", 
     height: "auto",
     objectFit: "cover",
     borderRadius: "12px",
@@ -26,15 +33,17 @@ const styles: { [key: string]: CSSProperties } = {
     justifyContent: "center",
     textAlign: "center",
     aspectRatio: "3 / 2",
+    margin: "0 auto", 
   },
   imageContainer: {
-    width: "50vw",
+    width: "90%", 
     height: "auto",
     position: "relative",
     borderRadius: "12px",
     border: "1px solid #700c43",
     overflow: "hidden",
     aspectRatio: "3 / 2",
+    margin: "0 auto", 
   },
   uploadedImage: {
     width: "100%",
@@ -55,6 +64,7 @@ const styles: { [key: string]: CSSProperties } = {
     color: "#ffe8fe",
     border: "1px solid #a82c72",
     borderRadius: "8px",
+    minWidth: "150px",
   },
   buttonSecondary: {
     backgroundImage:
@@ -64,6 +74,7 @@ const styles: { [key: string]: CSSProperties } = {
     backgroundPosition: "center",
     border: "1px solid #a82c72",
     borderRadius: "8px",
+    minWidth: "150px",
   },
 };
 
@@ -83,6 +94,7 @@ const FaceDetector: React.FC = () => {
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
   const [isProcessingImage, setIsProcessingImage] = useState(false);
   const [lastDetections, setLastDetections] = useState<any[] | null>(null);
+  const [containerWidth, setContainerWidth] = useState("90%");
 
   const stopCamera = () => {
     if (streamRef.current) {
@@ -360,6 +372,25 @@ const FaceDetector: React.FC = () => {
     }
   }, [selectedImage, modelsLoaded]);
 
+  useEffect(() => {
+    function handleResize() {
+      if (window.innerWidth >= 1200) {
+        setContainerWidth("65vw"); 
+      } else if (window.innerWidth >= 768) {
+        setContainerWidth("60vw"); 
+      } else {
+        setContainerWidth("80vw"); 
+      }
+    }
+
+    // Set initial size
+    handleResize();
+
+    // Update on resize
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
+
   const handlePause = () => {
     stopCamera();
     setIsStreaming(false);
@@ -379,7 +410,14 @@ const FaceDetector: React.FC = () => {
           <p>Camera access denied.</p>
         </div>
       ) : (
-        <div style={{ position: "relative", width: "50vw" }}>
+        <div
+          style={{
+            position: "relative",
+            width: containerWidth,
+            maxWidth: "800px",
+            margin: "0 auto",
+          }}
+        >
           <video
             ref={videoRef}
             autoPlay
@@ -445,7 +483,11 @@ const FaceDetector: React.FC = () => {
         {isStreaming ? (
           <Button
             onClick={handlePause}
-            sx={{ fontFamily: "var(--inter)", textTransform: "none" }}
+            sx={{
+              fontFamily: "var(--inter)",
+              textTransform: "none",
+              whiteSpace: "nowrap",
+            }}
             style={styles.buttonSecondary}
           >
             Pause Video
@@ -453,7 +495,11 @@ const FaceDetector: React.FC = () => {
         ) : (
           <Button
             onClick={handleStart}
-            sx={{ fontFamily: "var(--inter)", textTransform: "none" }}
+            sx={{
+              fontFamily: "var(--inter)",
+              textTransform: "none",
+              whiteSpace: "nowrap",
+            }}
             style={styles.buttonPrimary}
           >
             Start Video
@@ -462,7 +508,11 @@ const FaceDetector: React.FC = () => {
 
         <Button
           style={showEmotions ? styles.buttonSecondary : styles.buttonPrimary}
-          sx={{ fontFamily: "var(--inter)", textTransform: "none" }}
+          sx={{
+            fontFamily: "var(--inter)",
+            textTransform: "none",
+            whiteSpace: "nowrap",
+          }}
           onClick={() => setShowEmotions(!showEmotions)}
         >
           {showEmotions ? "Hide Emotions" : "Show Emotions"}
@@ -470,7 +520,11 @@ const FaceDetector: React.FC = () => {
 
         <Button
           style={showLandmarks ? styles.buttonSecondary : styles.buttonPrimary}
-          sx={{ fontFamily: "var(--inter)", textTransform: "none" }}
+          sx={{
+            fontFamily: "var(--inter)",
+            textTransform: "none",
+            whiteSpace: "nowrap",
+          }}
           onClick={() => setShowLandmarks(!showLandmarks)}
         >
           {showLandmarks ? "Hide Landmarks" : "Show Landmarks"}

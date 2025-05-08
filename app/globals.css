@@ -47,6 +47,7 @@ a {
 
 p {
   color: #a82c72;
+  font-size: clamp(10px, 5vw + 10px, 15px);
 }
 
 button {
