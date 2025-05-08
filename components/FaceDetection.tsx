@@ -3,7 +3,7 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 import React, { useEffect, useRef, CSSProperties, useState } from "react";
 import { Button } from "@mui/material";
-import * as faceapi from "@vladmandic/face-api";
+import * as faceapi from "face-api.js";
 import ImageInputButton from "./ImageInputButton";
 
 const styles: { [key: string]: CSSProperties } = {
