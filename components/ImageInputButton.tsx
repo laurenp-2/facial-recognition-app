@@ -9,7 +9,7 @@ interface ImageInputButtonProps {
  * ImageInputButton — a button that prompts users to select an image file
  * @return {React.FC} – The rendered button component.
  */
-const ImageInputButton: React.FC<ImageInputButtonProps> = () => {
+const ImageInputButton: React.FC<ImageInputButtonProps> = ({ onImageSelected }) => {
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const handleButtonClick = () => {
@@ -19,11 +19,14 @@ const ImageInputButton: React.FC<ImageInputButtonProps> = () => {
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const files = event.target.files;
     if (files && files.length > 0) {
-      // Process the selected files
-      console.log(files);
+      const file = files[0];
+      const img = new Image();
+      img.onload = () => {
+        onImageSelected(img);
+      };
+      img.src = URL.createObjectURL(file);
     }
   };
-
   return (
     <>
       <Button
