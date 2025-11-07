@@ -4,12 +4,13 @@ import { Button } from "@mui/material";
 interface ImageInputButtonProps {
   onImageSelected: (image: HTMLImageElement) => void;
 }
-
 /**
- * ImageInputButton — a button that prompts users to select an image file
- * @return {React.FC} – The rendered button component.
+ *  ImageInputButton — a button that prompts users to select an image file
+ *  @return {React.FC} – The rendered button component.
  */
-const ImageInputButton: React.FC<ImageInputButtonProps> = ({ onImageSelected }) => {
+const ImageInputButton: React.FC<ImageInputButtonProps> = ({
+  onImageSelected,
+}) => {
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const handleButtonClick = () => {
@@ -27,19 +28,29 @@ const ImageInputButton: React.FC<ImageInputButtonProps> = ({ onImageSelected }) 
       img.src = URL.createObjectURL(file);
     }
   };
+
   return (
     <>
       <Button
         onClick={handleButtonClick}
-        style={{
-          backgroundImage:
-            "url(https://media.istockphoto.com/id/1370962549/vector/violet-purple-pink-and-navy-blue-defocused-blurred-motion-gradient-abstract-background-vector.jpg?s=612x612&w=0&k=20&c=A6ArKVzCqEArn9ORyAYm78kbKyI47t2U2QWuHnwUkVg=)",
-          backgroundPosition: "left",
-          color: "#ffe8fe",
-          border: "1px solid #a82c72",
-          borderRadius: "8px",
+        sx={{
+          background: "linear-gradient(135deg, #ff6ec7 0%, #c44cff 100%)",
+          color: "#ffffff",
+          border: "none",
+          borderRadius: "12px",
+          padding: "0.75rem 1.5rem",
+          fontSize: "0.95rem",
+          fontWeight: "600",
+          textTransform: "none",
+          boxShadow: "0 4px 20px rgba(255, 110, 199, 0.3)",
+          transition: "all 0.3s ease",
+          minWidth: "140px",
+          "&:hover": {
+            background: "linear-gradient(135deg, #c44cff 0%, #7c3aed 100%)",
+            boxShadow: "0 6px 30px rgba(255, 110, 199, 0.4)",
+            transform: "translateY(-2px)",
+          },
         }}
-        sx={{ fontFamily: "var(--inter)", textTransform: "none" }}
       >
         Upload Image
       </Button>

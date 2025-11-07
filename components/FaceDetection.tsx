@@ -8,42 +8,43 @@ import ImageInputButton from "./ImageInputButton";
 
 const styles: { [key: string]: CSSProperties } = {
   container: {
-    position: "relative",
     display: "flex",
     flexDirection: "column",
-    gap: "10px",
+    gap: "1.5rem",
     alignItems: "center",
+    width: "100%",
   },
   buttonsBox: {
     display: "flex",
     flexWrap: "wrap",
-    gap: "10px",
-    width: "90%", 
-    maxWidth: "800px", 
+    gap: "0.75rem",
+    width: "100%",
     justifyContent: "center",
   },
   videoBox: {
-    width: "90%", 
+    width: "100%",
     height: "auto",
     objectFit: "cover",
-    borderRadius: "12px",
-    border: "1px solid #700c43",
+    borderRadius: "16px",
+    border: "2px solid rgba(168, 44, 114, 0.3)",
     display: "flex",
     alignItems: "center",
     justifyContent: "center",
     textAlign: "center",
-    aspectRatio: "3 / 2",
-    margin: "0 auto", 
+    aspectRatio: "16 / 9",
+    background: "rgba(0, 0, 0, 0.4)",
+    boxShadow: "0 8px 32px rgba(168, 44, 114, 0.2)",
   },
   imageContainer: {
-    width: "90%", 
+    width: "100%",
     height: "auto",
     position: "relative",
-    borderRadius: "12px",
-    border: "1px solid #700c43",
+    borderRadius: "16px",
+    border: "2px solid rgba(168, 44, 114, 0.3)",
     overflow: "hidden",
-    aspectRatio: "3 / 2",
-    margin: "0 auto", 
+    aspectRatio: "16 / 9",
+    background: "rgba(0, 0, 0, 0.4)",
+    boxShadow: "0 8px 32px rgba(168, 44, 114, 0.2)",
   },
   uploadedImage: {
     width: "100%",
@@ -58,23 +59,53 @@ const styles: { [key: string]: CSSProperties } = {
     height: "100%",
   },
   buttonPrimary: {
-    backgroundImage:
-      "url(https://media.istockphoto.com/id/1370962549/vector/violet-purple-pink-and-navy-blue-defocused-blurred-motion-gradient-abstract-background-vector.jpg?s=612x612&w=0&k=20&c=A6ArKVzCqEArn9ORyAYm78kbKyI47t2U2QWuHnwUkVg=)",
-    backgroundPosition: "left",
-    color: "#ffe8fe",
-    border: "1px solid #a82c72",
-    borderRadius: "8px",
-    minWidth: "150px",
+    background: "linear-gradient(135deg, #ff6ec7 0%, #c44cff 100%)",
+    color: "#ffffff",
+    border: "none",
+    borderRadius: "12px",
+    padding: "0.75rem 1.5rem",
+    fontSize: "0.95rem",
+    fontWeight: "600",
+    textTransform: "none",
+    boxShadow: "0 4px 20px rgba(255, 110, 199, 0.3)",
+    transition: "all 0.3s ease",
+    minWidth: "140px",
   },
   buttonSecondary: {
-    backgroundImage:
-      "url(https://media.istockphoto.com/id/1370962549/vector/violet-purple-pink-and-navy-blue-defocused-blurred-motion-gradient-abstract-background-vector.jpg?s=612x612&w=0&k=20&c=A6ArKVzCqEArn9ORyAYm78kbKyI47t2U2QWuHnwUkVg=)",
-    color: "transparent",
-    backgroundClip: "text",
-    backgroundPosition: "center",
-    border: "1px solid #a82c72",
-    borderRadius: "8px",
-    minWidth: "150px",
+    background: "transparent",
+    color: "#ff6ec7",
+    border: "2px solid #ff6ec7",
+    borderRadius: "12px",
+    padding: "0.75rem 1.5rem",
+    fontSize: "0.95rem",
+    fontWeight: "600",
+    textTransform: "none",
+    transition: "all 0.3s ease",
+    minWidth: "140px",
+  },
+  messageText: {
+    color: "rgba(255, 255, 255, 0.7)",
+    fontSize: "1rem",
+    margin: 0,
+  },
+  loadingText: {
+    color: "#ff6ec7",
+    fontSize: "0.95rem",
+    margin: 0,
+  },
+  processingOverlay: {
+    position: "absolute",
+    top: "50%",
+    left: "50%",
+    transform: "translate(-50%, -50%)",
+    background: "rgba(0, 0, 0, 0.85)",
+    color: "#ff6ec7",
+    padding: "1rem 2rem",
+    borderRadius: "12px",
+    border: "1px solid rgba(255, 110, 199, 0.3)",
+    zIndex: 10,
+    fontSize: "1rem",
+    fontWeight: "600",
   },
 };
 
@@ -94,7 +125,6 @@ const FaceDetector: React.FC = () => {
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
   const [isProcessingImage, setIsProcessingImage] = useState(false);
   const [lastDetections, setLastDetections] = useState<any[] | null>(null);
-  const [containerWidth, setContainerWidth] = useState("90%");
 
   const stopCamera = () => {
     if (streamRef.current) {
@@ -105,7 +135,6 @@ const FaceDetector: React.FC = () => {
       }
     }
 
-    // Clear detection interval
     if (detectionIntervalRef.current) {
       clearInterval(detectionIntervalRef.current);
       detectionIntervalRef.current = null;
@@ -114,7 +143,6 @@ const FaceDetector: React.FC = () => {
 
   const startCamera = async () => {
     try {
-      // Clear any existing image when starting camera
       setSelectedImage(null);
       setLastDetections(null);
 
@@ -134,7 +162,7 @@ const FaceDetector: React.FC = () => {
 
   const loadModels = async () => {
     try {
-      const MODEL_URL = "/models"; // Using local models directory
+      const MODEL_URL = "/models";
       console.log("Loading face detection models from:", MODEL_URL);
 
       await Promise.all([
@@ -161,9 +189,7 @@ const FaceDetector: React.FC = () => {
     const video = videoRef.current;
     const canvas = canvasRef.current;
 
-    // Wait for video metadata to load to get correct dimensions
     video.addEventListener("loadedmetadata", () => {
-      // Set canvas dimensions to match video
       const displaySize = {
         width: video.clientWidth,
         height: video.clientHeight,
@@ -172,7 +198,6 @@ const FaceDetector: React.FC = () => {
       canvas.height = displaySize.height;
       faceapi.matchDimensions(canvas, displaySize);
 
-      // Start detection loop
       if (detectionIntervalRef.current) {
         clearInterval(detectionIntervalRef.current);
       }
@@ -203,7 +228,6 @@ const FaceDetector: React.FC = () => {
               faceapi.draw.drawFaceExpressions(canvas, resizedDetections);
             }
 
-            // Draw age and gender
             resizedDetections.forEach((detection) => {
               const { age, gender, genderProbability } = detection;
               if (age && gender) {
@@ -211,13 +235,15 @@ const FaceDetector: React.FC = () => {
                   genderProbability * 100
                 )}%)`;
                 const { x, y } = detection.detection.box;
-                ctx.fillStyle = "white";
-                ctx.font = "16px Arial";
+                ctx.fillStyle = "#ff6ec7";
+                ctx.strokeStyle = "rgba(0, 0, 0, 0.8)";
+                ctx.lineWidth = 3;
+                ctx.font = "bold 16px Arial";
+                ctx.strokeText(text, x, y - 10);
                 ctx.fillText(text, x, y - 10);
               }
             });
 
-            // Debug output
             if (detections.length > 0) {
               console.log(`Detected ${detections.length} faces`);
             }
@@ -230,19 +256,15 @@ const FaceDetector: React.FC = () => {
   }, [modelsLoaded]);
 
   const handleImageSelected = (image: HTMLImageElement) => {
-    // Stop camera if it's running
     if (isStreaming) {
       stopCamera();
       setIsStreaming(false);
     }
 
-    // Set image URL to display the image
     setSelectedImage(image.src);
     setIsProcessingImage(true);
 
-    // Process the image for face detection
     if (canvasRef.current && modelsLoaded) {
-      // Short delay to ensure DOM updates before processing
       setTimeout(() => {
         processImage(image);
         setIsProcessingImage(false);
@@ -255,14 +277,12 @@ const FaceDetector: React.FC = () => {
 
     const canvas = canvasRef.current;
 
-    // Get the parent container dimensions
     const parentElement = canvas.parentElement;
     const displaySize = {
       width: parentElement?.clientWidth || 800,
       height: parentElement?.clientHeight || 600,
     };
 
-    // Set canvas dimensions to match container
     canvas.width = displaySize.width;
     canvas.height = displaySize.height;
     faceapi.matchDimensions(canvas, displaySize);
@@ -275,11 +295,7 @@ const FaceDetector: React.FC = () => {
         .withAgeAndGender();
 
       const resizedDetections = faceapi.resizeResults(detections, displaySize);
-
-      // Store the detections for reuse when toggling settings
       setLastDetections(resizedDetections);
-
-      // Draw the detections
       drawDetections(canvas, resizedDetections);
 
       console.log(`Detected ${detections.length} faces in image`);
@@ -288,7 +304,6 @@ const FaceDetector: React.FC = () => {
     }
   };
 
-  // Separate function to draw detections - can be called when toggling settings
   const drawDetections = (canvas: HTMLCanvasElement, detections: any[]) => {
     const ctx = canvas.getContext("2d");
     if (!ctx) return;
@@ -304,7 +319,6 @@ const FaceDetector: React.FC = () => {
       faceapi.draw.drawFaceExpressions(canvas, detections);
     }
 
-    // Draw age and gender
     detections.forEach((detection) => {
       const { age, gender, genderProbability } = detection;
       if (age && gender) {
@@ -312,8 +326,11 @@ const FaceDetector: React.FC = () => {
           genderProbability * 100
         )}%)`;
         const { x, y } = detection.detection.box;
-        ctx.fillStyle = "white";
-        ctx.font = "16px Arial";
+        ctx.fillStyle = "#ff6ec7";
+        ctx.strokeStyle = "rgba(0, 0, 0, 0.8)";
+        ctx.lineWidth = 3;
+        ctx.font = "bold 16px Arial";
+        ctx.strokeText(text, x, y - 10);
         ctx.fillText(text, x, y - 10);
       }
     });
@@ -321,7 +338,6 @@ const FaceDetector: React.FC = () => {
 
   useEffect(() => {
     showEmotionsRef.current = showEmotions;
-
     if (selectedImage && lastDetections && canvasRef.current) {
       drawDetections(canvasRef.current, lastDetections);
     }
@@ -329,14 +345,12 @@ const FaceDetector: React.FC = () => {
 
   useEffect(() => {
     showLandmarksRef.current = showLandmarks;
-
     if (selectedImage && lastDetections && canvasRef.current) {
       drawDetections(canvasRef.current, lastDetections);
     }
   }, [showLandmarks, selectedImage, lastDetections]);
 
   useEffect(() => {
-    // Load models
     loadModels().then((success) => {
       if (success) {
         startCamera().then((cameraStarted) => {
@@ -347,20 +361,17 @@ const FaceDetector: React.FC = () => {
       }
     });
 
-    // Cleanup function
     return () => {
       stopCamera();
     };
   }, []);
 
-  // Setup detection when models are loaded and video is streaming
   useEffect(() => {
     if (modelsLoaded && isStreaming) {
       setupFaceDetection();
     }
   }, [modelsLoaded, isStreaming, setupFaceDetection]);
 
-  // When selected image changes and there's an image ref available, process it
   useEffect(() => {
     if (
       selectedImage &&
@@ -371,25 +382,6 @@ const FaceDetector: React.FC = () => {
       processImage(imageRef.current);
     }
   }, [selectedImage, modelsLoaded]);
-
-  useEffect(() => {
-    function handleResize() {
-      if (window.innerWidth >= 1200) {
-        setContainerWidth("65vw"); 
-      } else if (window.innerWidth >= 768) {
-        setContainerWidth("60vw"); 
-      } else {
-        setContainerWidth("80vw"); 
-      }
-    }
-
-    // Set initial size
-    handleResize();
-
-    // Update on resize
-    window.addEventListener("resize", handleResize);
-    return () => window.removeEventListener("resize", handleResize);
-  }, []);
 
   const handlePause = () => {
     stopCamera();
@@ -407,17 +399,12 @@ const FaceDetector: React.FC = () => {
     <div style={styles.container}>
       {hasError ? (
         <div style={styles.videoBox}>
-          <p>Camera access denied.</p>
+          <p style={styles.messageText}>
+            Camera access denied. Please enable camera permissions.
+          </p>
         </div>
       ) : (
-        <div
-          style={{
-            position: "relative",
-            width: containerWidth,
-            maxWidth: "800px",
-            margin: "0 auto",
-          }}
-        >
+        <div style={{ position: "relative", width: "100%" }}>
           <video
             ref={videoRef}
             autoPlay
@@ -455,26 +442,14 @@ const FaceDetector: React.FC = () => {
 
           {!isStreaming && !selectedImage && (
             <div style={styles.videoBox}>
-              <p>Webcam paused. Upload an image or start the webcam.</p>
+              <p style={styles.messageText}>
+                Webcam paused. Upload an image or start the webcam.
+              </p>
             </div>
           )}
 
           {isProcessingImage && (
-            <div
-              style={{
-                position: "absolute",
-                top: "50%",
-                left: "50%",
-                transform: "translate(-50%, -50%)",
-                background: "rgba(0,0,0,0.7)",
-                color: "white",
-                padding: "10px 20px",
-                borderRadius: "5px",
-                zIndex: 10,
-              }}
-            >
-              Processing image...
-            </div>
+            <div style={styles.processingOverlay}>Processing image...</div>
           )}
         </div>
       )}
@@ -484,11 +459,13 @@ const FaceDetector: React.FC = () => {
           <Button
             onClick={handlePause}
             sx={{
-              fontFamily: "var(--inter)",
-              textTransform: "none",
-              whiteSpace: "nowrap",
+              ...styles.buttonSecondary,
+              "&:hover": {
+                background: "rgba(255, 110, 199, 0.1)",
+                borderColor: "#c44cff",
+                color: "#c44cff",
+              },
             }}
-            style={styles.buttonSecondary}
           >
             Pause Video
           </Button>
@@ -496,22 +473,33 @@ const FaceDetector: React.FC = () => {
           <Button
             onClick={handleStart}
             sx={{
-              fontFamily: "var(--inter)",
-              textTransform: "none",
-              whiteSpace: "nowrap",
+              ...styles.buttonPrimary,
+              "&:hover": {
+                background: "linear-gradient(135deg, #c44cff 0%, #7c3aed 100%)",
+                boxShadow: "0 6px 30px rgba(255, 110, 199, 0.4)",
+                transform: "translateY(-2px)",
+              },
             }}
-            style={styles.buttonPrimary}
           >
             Start Video
           </Button>
         )}
 
         <Button
-          style={showEmotions ? styles.buttonSecondary : styles.buttonPrimary}
           sx={{
-            fontFamily: "var(--inter)",
-            textTransform: "none",
-            whiteSpace: "nowrap",
+            ...(showEmotions ? styles.buttonSecondary : styles.buttonPrimary),
+            "&:hover": showEmotions
+              ? {
+                  background: "rgba(255, 110, 199, 0.1)",
+                  borderColor: "#c44cff",
+                  color: "#c44cff",
+                }
+              : {
+                  background:
+                    "linear-gradient(135deg, #c44cff 0%, #7c3aed 100%)",
+                  boxShadow: "0 6px 30px rgba(255, 110, 199, 0.4)",
+                  transform: "translateY(-2px)",
+                },
           }}
           onClick={() => setShowEmotions(!showEmotions)}
         >
@@ -519,11 +507,20 @@ const FaceDetector: React.FC = () => {
         </Button>
 
         <Button
-          style={showLandmarks ? styles.buttonSecondary : styles.buttonPrimary}
           sx={{
-            fontFamily: "var(--inter)",
-            textTransform: "none",
-            whiteSpace: "nowrap",
+            ...(showLandmarks ? styles.buttonSecondary : styles.buttonPrimary),
+            "&:hover": showLandmarks
+              ? {
+                  background: "rgba(255, 110, 199, 0.1)",
+                  borderColor: "#c44cff",
+                  color: "#c44cff",
+                }
+              : {
+                  background:
+                    "linear-gradient(135deg, #c44cff 0%, #7c3aed 100%)",
+                  boxShadow: "0 6px 30px rgba(255, 110, 199, 0.4)",
+                  transform: "translateY(-2px)",
+                },
           }}
           onClick={() => setShowLandmarks(!showLandmarks)}
         >
@@ -533,7 +530,9 @@ const FaceDetector: React.FC = () => {
         <ImageInputButton onImageSelected={handleImageSelected} />
       </div>
 
-      {!modelsLoaded && <p>Loading face detection models...</p>}
+      {!modelsLoaded && (
+        <p style={styles.loadingText}>Loading face detection models...</p>
+      )}
     </div>
   );
 };
