@@ -5,6 +5,8 @@ import React, { useEffect, useRef, CSSProperties, useState } from "react";
 import { Button } from "@mui/material";
 import * as faceapi from "face-api.js";
 import ImageInputButton from "./ImageInputButton";
+import EmotionDashboard from "./EmotionDashboard";
+import { EmotionData } from "../types/emotions";
 
 const styles: { [key: string]: CSSProperties } = {
   container: {
@@ -126,6 +128,11 @@ const FaceDetector: React.FC = () => {
   const [isProcessingImage, setIsProcessingImage] = useState(false);
   const [lastDetections, setLastDetections] = useState<any[] | null>(null);
 
+  // Emotion tracking state
+  const [emotionHistory, setEmotionHistory] = useState<EmotionData[]>([]);
+  const [isTrackingEmotions, setIsTrackingEmotions] = useState(false);
+  const isTrackingEmotionsRef = useRef(false);
+
   const stopCamera = () => {
     if (streamRef.current) {
       streamRef.current.getTracks().forEach((track) => track.stop());
@@ -181,6 +188,14 @@ const FaceDetector: React.FC = () => {
     }
   };
 
+  const getDominantEmotion = (expressions: any): string => {
+    const emotions = Object.entries(expressions) as [string, number][];
+    const dominant = emotions.reduce((prev, current) =>
+      current[1] > prev[1] ? current : prev
+    );
+    return dominant[0];
+  };
+
   const setupFaceDetection = React.useCallback(() => {
     if (!videoRef.current || !canvasRef.current || !modelsLoaded) return;
 
@@ -216,6 +231,26 @@ const FaceDetector: React.FC = () => {
             detections,
             displaySize
           );
+
+          // Track emotions if enabled and face detected
+          if (isTrackingEmotionsRef.current && detections.length > 0) {
+            const firstFace = detections[0];
+            const emotionData: EmotionData = {
+              timestamp: Date.now(),
+              emotions: {
+                neutral: firstFace.expressions.neutral,
+                happy: firstFace.expressions.happy,
+                sad: firstFace.expressions.sad,
+                angry: firstFace.expressions.angry,
+                fearful: firstFace.expressions.fearful,
+                disgusted: firstFace.expressions.disgusted,
+                surprised: firstFace.expressions.surprised,
+              },
+              dominantEmotion: getDominantEmotion(firstFace.expressions),
+            };
+
+            setEmotionHistory((prev) => [...prev, emotionData]);
+          }
 
           const ctx = canvas.getContext("2d");
           if (ctx) {
@@ -334,6 +369,64 @@ const FaceDetector: React.FC = () => {
         ctx.fillText(text, x, y - 10);
       }
     });
+  };
+
+  // Emotion tracking handlers
+  const handleStartTracking = () => {
+    setIsTrackingEmotions(true);
+    isTrackingEmotionsRef.current = true;
+    setEmotionHistory([]);
+  };
+
+  const handleStopTracking = () => {
+    setIsTrackingEmotions(false);
+    isTrackingEmotionsRef.current = false;
+  };
+
+  const handleExportData = () => {
+    // Export as JSON
+    const jsonData = JSON.stringify(
+      {
+        sessionStart: emotionHistory[0]?.timestamp || Date.now(),
+        sessionEnd:
+          emotionHistory[emotionHistory.length - 1]?.timestamp || Date.now(),
+        dataPoints: emotionHistory.length,
+        data: emotionHistory,
+      },
+      null,
+      2
+    );
+
+    const jsonBlob = new Blob([jsonData], { type: "application/json" });
+    const jsonUrl = URL.createObjectURL(jsonBlob);
+    const jsonLink = document.createElement("a");
+    jsonLink.href = jsonUrl;
+    jsonLink.download = `emotion-data-${Date.now()}.json`;
+    jsonLink.click();
+
+    // Export as CSV
+    const csvHeader =
+      "Timestamp,Neutral,Happy,Sad,Angry,Fearful,Disgusted,Surprised,Dominant\n";
+    const csvRows = emotionHistory
+      .map(
+        (data) =>
+          `${data.timestamp},${data.emotions.neutral},${data.emotions.happy},${data.emotions.sad},${data.emotions.angry},${data.emotions.fearful},${data.emotions.disgusted},${data.emotions.surprised},${data.dominantEmotion}`
+      )
+      .join("\n");
+    const csvData = csvHeader + csvRows;
+
+    const csvBlob = new Blob([csvData], { type: "text/csv" });
+    const csvUrl = URL.createObjectURL(csvBlob);
+    const csvLink = document.createElement("a");
+    csvLink.href = csvUrl;
+    csvLink.download = `emotion-data-${Date.now()}.csv`;
+    csvLink.click();
+  };
+
+  const handleClearData = () => {
+    setEmotionHistory([]);
+    setIsTrackingEmotions(false);
+    isTrackingEmotionsRef.current = false;
   };
 
   useEffect(() => {
@@ -533,6 +626,16 @@ const FaceDetector: React.FC = () => {
       {!modelsLoaded && (
         <p style={styles.loadingText}>Loading face detection models...</p>
       )}
+
+      {/* Emotion Analytics Dashboard */}
+      <EmotionDashboard
+        emotionHistory={emotionHistory}
+        isTracking={isTrackingEmotions}
+        onStartTracking={handleStartTracking}
+        onStopTracking={handleStopTracking}
+        onExportData={handleExportData}
+        onClearData={handleClearData}
+      />
     </div>
   );
 };
